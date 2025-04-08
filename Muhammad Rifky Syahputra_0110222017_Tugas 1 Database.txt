@@ -1,0 +1,243 @@
+Windows PowerShell
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Install the latest PowerShell for new features and improvements! https://aka.ms/PSWindows
+
+PS C:\Users\mrspl> mysql -u root -p
+Enter password: ***********
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 8
+Server version: 8.0.41 MySQL Community Server - GPL
+
+Copyright (c) 2000, 2025, Oracle and/or its affiliates.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql> create database dbpos;
+Query OK, 1 row affected (0.01 sec)
+
+mysql> use dbpos;
+Database changed
+mysql> create table kartu ()
+    ->
+    -> ^C
+mysql> create table kartu(
+    -> ^C
+mysql> create table kartu (
+    -> id integer auto_increment primary key,
+    -> kode varchar(4) unique,
+    -> nama varchar(30) not null,
+    -> diskon double default 0,
+    -> iuran double default 0);
+Query OK, 0 rows affected (0.03 sec)
+
+mysql> show tables;
++-----------------+
+| Tables_in_dbpos |
++-----------------+
+| kartu           |
++-----------------+
+1 row in set (0.00 sec)
+
+mysql> select * from kartu;
+Empty set (0.00 sec)
+
+mysql> create table pelanggan (
+    -> id int auto_increment primary key,
+    -> kode varchar(10) unique,
+    -> nama varchar(45),
+    -> jk char(1),
+    -> tmp_lahir varchar(30),
+    -> tgl_lahir date,
+    -> email varchar(45),
+    -> kartu_id int not null references kartu(id));
+Query OK, 0 rows affected (0.03 sec)
+
+mysql> show tables;
++-----------------+
+| Tables_in_dbpos |
++-----------------+
+| kartu           |
+| pelanggan       |
++-----------------+
+2 rows in set (0.00 sec)
+
+mysql> create table pesanan (
+    -> id int not null auto_increment primary key,
+    -> tanggal date,
+    -> total double,
+    -> pelanggan_id int not null references pelanggan(id));
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> create table pembayaran (
+    -> id int not null auto_increment primary key,
+    -> nokuitansi varchar(10) unique,
+    -> tanggal date,
+    -> jumlah double,
+    -> ke int,
+    -> pesanan_id int not null refrences pesanan(id));
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'refrences pesanan(id))' at line 7
+mysql> create table pembayaran (
+    -> id int not null auto_increment primary key,
+    -> nokuitansi varchar(10) unique,
+    -> tanggal date,
+    -> jumlah double,
+    -> ke int,
+    -> pesanan_id int not null references pesanan(id));
+Query OK, 0 rows affected (0.03 sec)
+
+mysql> show tables
+    -> ;
++-----------------+
+| Tables_in_dbpos |
++-----------------+
+| kartu           |
+| pelanggan       |
+| pembayaran      |
+| pesanan         |
++-----------------+
+4 rows in set (0.00 sec)
+
+mysql> create table jenis_produk(
+    -> id int not null auto_increment primary key,
+    -> nama varchar(45));
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> show tables;
++-----------------+
+| Tables_in_dbpos |
++-----------------+
+| jenis_produk    |
+| kartu           |
+| pelanggan       |
+| pembayaran      |
+| pesanan         |
++-----------------+
+5 rows in set (0.00 sec)
+
+mysql> create table produk (
+    -> id int not null auto_increment primary key,
+    -> kode varchar(10),
+    -> nama varchar(45),^C
+mysql> create table produk (
+    -> id int not null auto_increment primary key,
+    -> kode varchar(10) unique,
+    -> nama varchar(45),
+    -> harga_beli double,
+    -> harga_jual double,
+    -> stok int(11),
+    -> min_stok int(11),
+    -> jenis_produk_id int(11)^C
+mysql> create table produk (
+    -> id int not null auto_increment primary key,
+    -> kode varchar(10) unique,
+    -> nama varchar(45),
+    -> harga_beli double,
+    -> harga_jual double,
+    -> stok int,
+    -> min_stok int,
+    -> jenis_produk_id int not null references jenis_produk(id));
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> show tables;
++-----------------+
+| Tables_in_dbpos |
++-----------------+
+| jenis_produk    |
+| kartu           |
+| pelanggan       |
+| pembayaran      |
+| pesanan         |
+| produk          |
++-----------------+
+6 rows in set (0.00 sec)
+
+mysql> create table pesanan_items (
+    -> id int not null auto_increment primary key,
+    -> produk_id int not null references produk(id),
+    -> pesanan_id int not null references pesanan(id),
+    -> qty int,
+    -> harga double;
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '' at line 6
+mysql> create table pesanan_items (
+    -> id int not null auto_increment primary key,
+    -> produk_id int not null references produk(id),
+    -> pesanan_id int not null references pesanan(id),
+    -> qty int,
+    -> harga double);
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> show tables;
++-----------------+
+| Tables_in_dbpos |
++-----------------+
+| jenis_produk    |
+| kartu           |
+| pelanggan       |
+| pembayaran      |
+| pesanan         |
+| pesanan_items   |
+| produk          |
++-----------------+
+7 rows in set (0.00 sec)
+
+mysql> create table vendor (
+    -> id int not null auto_increment primary key,
+    -> nokuintansi varchar(10) unique,
+    -> tanggal date,
+    -> jumlah double,
+    -> ke int,
+    -> pesanan_id int not null references pesanan(id));
+Query OK, 0 rows affected (0.03 sec)
+
+mysql> show tablesl
+    -> ;
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'tablesl' at line 1
+mysql> show tables;
++-----------------+
+| Tables_in_dbpos |
++-----------------+
+| jenis_produk    |
+| kartu           |
+| pelanggan       |
+| pembayaran      |
+| pesanan         |
+| pesanan_items   |
+| produk          |
+| vendor          |
++-----------------+
+8 rows in set (0.00 sec)
+
+mysql> create table pembelian (
+    -> id int not null auto_increment primary key,
+    -> tanggal varchar(45),
+    -> nomor varchar(10),
+    -> produk_id int not null references produk(id),
+    -> jumlah int,
+    -> harga double,
+    -> vendor_id int not null references vendor(id));
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> show tablesl
+    -> ^C
+mysql> show tables;
++-----------------+
+| Tables_in_dbpos |
++-----------------+
+| jenis_produk    |
+| kartu           |
+| pelanggan       |
+| pembayaran      |
+| pembelian       |
+| pesanan         |
+| pesanan_items   |
+| produk          |
+| vendor          |
++-----------------+
+9 rows in set (0.00 sec)
+
+mysql>
