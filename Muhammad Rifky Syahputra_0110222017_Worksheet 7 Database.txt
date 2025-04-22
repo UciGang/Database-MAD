@@ -1,0 +1,172 @@
+Muhammad Rifky Syahputra
+0110222017
+
+1.
+- Pelanggan memesan dalam table pesanan
+mysql> alter table pembayaran add status_pembayaran varchar(25);
+Query OK, 0 rows affected (0.05 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> desc pembayaran;
++-------------------+-------------+------+-----+---------+----------------+
+| Field             | Type        | Null | Key | Default | Extra          |
++-------------------+-------------+------+-----+---------+----------------+
+| id                | int         | NO   | PRI | NULL    | auto_increment |
+| nokuitansi        | varchar(10) | YES  | UNI | NULL    |                |
+| tanggal           | date        | YES  |     | NULL    |                |
+| jumlah            | double      | YES  |     | NULL    |                |
+| ke                | int         | YES  |     | NULL    |                |
+| pesanan_id        | int         | NO   | MUL | NULL    |                |
+| status_pembayaran | varchar(25) | YES  |     | NULL    |                |
++-------------------+-------------+------+-----+---------+----------------+
+7 rows in set (0.00 sec)
+
+- Proses pembayaran
+mysql> delimiter //
+mysql> create trigger cek_pembayaran before insert on pembayaran
+    -> for each row
+    -> begin
+    -> declare total_bayar decimal(10,2);
+    -> declare total_pesanan decimal(10,2);
+    -> select sum(jumlah) into total_bayar from pembayaran where pesanan_id = new.pesanan_id;
+    -> select total into total_pesanan from pesanan where id = new.pesanan_id;
+    -> if total_bayar + new.jumlah >= total_pesanan then
+    -> set new.status_pembayaran = 'lunas';
+    -> end if;
+    -> end //
+Query OK, 0 rows affected (0.01 sec)
+mysql> select * from pesanan;
++----+------------+---------+--------------+
+| id | tanggal    | total   | pelanggan_id |
++----+------------+---------+--------------+
+|  1 | 2015-11-04 | 9720000 |            1 |
+|  2 | 2015-11-04 |   17500 |            3 |
+|  3 | 2015-11-04 |       0 |            6 |
+|  4 | 2015-11-04 |       0 |            7 |
+|  5 | 2015-11-04 |       0 |           10 |
+|  6 | 2015-11-04 |       0 |            2 |
+|  7 | 2015-11-04 |       0 |            5 |
+|  8 | 2015-11-04 |       0 |            4 |
+|  9 | 2015-11-04 |       0 |            8 |
+| 10 | 2015-11-04 |       0 |            9 |
++----+------------+---------+--------------+
+10 rows in set (0.00 sec)
+mysql> insert into pembayaran (nokuitansi, tanggal, jumlah, ke, pesanan_id)
+    -> values ('KWI02', '2023-03-03', 9700000, 1, 1);
+Query OK, 1 row affected (0.01 sec)
+
+mysql> select * from pembayaran;
++----+------------+------------+---------+------+------------+-------------------+
+| id | nokuitansi | tanggal    | jumlah  | ke   | pesanan_id | status_pembayaran |
++----+------------+------------+---------+------+------------+-------------------+
+|  1 | KWI01      | 2023-03-03 |   20000 |    1 |          1 | NULL              |
+|  3 | KWI02      | 2023-03-03 | 9700000 |    1 |          1 | lunas             |
++----+------------+------------+---------+------+------------+-------------------+
+2 rows in set (0.00 sec)
+
+2.
+mysql> create procedure kurangi_stok (
+    -> in id_produk int,
+    -> in jumlah_produk int)
+    -> begin
+    -> declare stok_produk int;
+    -> select stok into stok_produk
+    -> from produk
+    -> where id = id_produk;
+    -> if stok_produk >= jumlah_produk then
+    -> update produk
+    -> set stok = stok - jumlah_produk
+    -> where id = id_produk;
+    -> else
+    -> signal sqlstate '45000'
+    -> set message_text = 'stok tidak cukup!!';
+    -> end if;
+    -> end //
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> select * from produk;
++----+------+------------------+------------+------------+------+----------+-----------------+
+| id | kode | nama             | harga_beli | harga_jual | stok | min_stok | jenis_produk_id |
++----+------+------------------+------------+------------+------+----------+-----------------+
+|  1 | TV01 | Televisi 21 inch |    3500000 |    5503680 |    5 |        2 |               1 |
+|  2 | TV02 | Televisi 40 inch |    5500000 |    8124480 |    4 |        2 |               1 |
+|  3 | K001 | Kulkas 2 pintu   |    3500000 |    5110560 |    6 |        2 |               1 |
+|  4 | M001 | Meja Makan       |     500000 |     600000 |    4 |        3 |               2 |
+|  5 | TK01 | Teh Kotak        |       3000 |       3500 |    6 |       10 |               4 |
+|  6 | PC01 | PC Desktop HP    |    7000000 |    9600000 |    9 |        2 |               5 |
+|  7 | TB01 | Teh Botol        |       2000 |       2500 |   53 |       10 |               4 |
+|  8 | AC01 | Notebook Acer    |    8000000 |   10800000 |    7 |        2 |               5 |
+|  9 | LN01 | Notebook Lenovo  |    9000000 |   12000000 |    9 |        2 |               5 |
+| 10 | L004 | Laptop HP        |   12000000 |   13000000 |   20 |        5 |               5 |
++----+------+------------------+------------+------------+------+----------+-----------------+
+10 rows in set (0.00 sec)
+
+mysql> call kurangi_stok(7,3);
+Query OK, 1 row affected (0.00 sec)
+
+mysql> select * from produk;
++----+------+------------------+------------+------------+------+----------+-----------------+
+| id | kode | nama             | harga_beli | harga_jual | stok | min_stok | jenis_produk_id |
++----+------+------------------+------------+------------+------+----------+-----------------+
+|  1 | TV01 | Televisi 21 inch |    3500000 |    5503680 |    5 |        2 |               1 |
+|  2 | TV02 | Televisi 40 inch |    5500000 |    8124480 |    4 |        2 |               1 |
+|  3 | K001 | Kulkas 2 pintu   |    3500000 |    5110560 |    6 |        2 |               1 |
+|  4 | M001 | Meja Makan       |     500000 |     600000 |    4 |        3 |               2 |
+|  5 | TK01 | Teh Kotak        |       3000 |       3500 |    6 |       10 |               4 |
+|  6 | PC01 | PC Desktop HP    |    7000000 |    9600000 |    9 |        2 |               5 |
+|  7 | TB01 | Teh Botol        |       2000 |       2500 |   50 |       10 |               4 |
+|  8 | AC01 | Notebook Acer    |    8000000 |   10800000 |    7 |        2 |               5 |
+|  9 | LN01 | Notebook Lenovo  |    9000000 |   12000000 |    9 |        2 |               5 |
+| 10 | L004 | Laptop HP        |   12000000 |   13000000 |   20 |        5 |               5 |
++----+------+------------------+------------+------------+------+----------+-----------------+
+10 rows in set (0.00 sec)
+
+mysql> call kurangi_stok(7,100);
+ERROR 1644 (45000): stok tidak cukup!!
+
+3.
+mysql> create trigger trig_kurangi_stok
+    -> after insert on pesanan_items
+    -> for each row
+    -> begin
+    -> call kurangi_stok(new.produk_id, new.qty);
+    -> end //
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> select * from produk;
++----+------+------------------+------------+------------+------+----------+-----------------+
+| id | kode | nama             | harga_beli | harga_jual | stok | min_stok | jenis_produk_id |
++----+------+------------------+------------+------------+------+----------+-----------------+
+|  1 | TV01 | Televisi 21 inch |    3500000 |    5503680 |    5 |        2 |               1 |
+|  2 | TV02 | Televisi 40 inch |    5500000 |    8124480 |    4 |        2 |               1 |
+|  3 | K001 | Kulkas 2 pintu   |    3500000 |    5110560 |    6 |        2 |               1 |
+|  4 | M001 | Meja Makan       |     500000 |     600000 |    4 |        3 |               2 |
+|  5 | TK01 | Teh Kotak        |       3000 |       3500 |    6 |       10 |               4 |
+|  6 | PC01 | PC Desktop HP    |    7000000 |    9600000 |    9 |        2 |               5 |
+|  7 | TB01 | Teh Botol        |       2000 |       2500 |   50 |       10 |               4 |
+|  8 | AC01 | Notebook Acer    |    8000000 |   10800000 |    7 |        2 |               5 |
+|  9 | LN01 | Notebook Lenovo  |    9000000 |   12000000 |    9 |        2 |               5 |
+| 10 | L004 | Laptop HP        |   12000000 |   13000000 |   20 |        5 |               5 |
++----+------+------------------+------------+------------+------+----------+-----------------+
+10 rows in set (0.00 sec)
+
+mysql> insert into pesanan_items (id, produk_id, pesanan_id, qty, harga)
+    -> values (4, 7, 3, 10, 25000);
+Query OK, 1 row affected (0.00 sec)
+
+mysql> select * from produk;
++----+------+------------------+------------+------------+------+----------+-----------------+
+| id | kode | nama             | harga_beli | harga_jual | stok | min_stok | jenis_produk_id |
++----+------+------------------+------------+------------+------+----------+-----------------+
+|  1 | TV01 | Televisi 21 inch |    3500000 |    5503680 |    5 |        2 |               1 |
+|  2 | TV02 | Televisi 40 inch |    5500000 |    8124480 |    4 |        2 |               1 |
+|  3 | K001 | Kulkas 2 pintu   |    3500000 |    5110560 |    6 |        2 |               1 |
+|  4 | M001 | Meja Makan       |     500000 |     600000 |    4 |        3 |               2 |
+|  5 | TK01 | Teh Kotak        |       3000 |       3500 |    6 |       10 |               4 |
+|  6 | PC01 | PC Desktop HP    |    7000000 |    9600000 |    9 |        2 |               5 |
+|  7 | TB01 | Teh Botol        |       2000 |       2500 |   40 |       10 |               4 |
+|  8 | AC01 | Notebook Acer    |    8000000 |   10800000 |    7 |        2 |               5 |
+|  9 | LN01 | Notebook Lenovo  |    9000000 |   12000000 |    9 |        2 |               5 |
+| 10 | L004 | Laptop HP        |   12000000 |   13000000 |   20 |        5 |               5 |
++----+------+------------------+------------+------------+------+----------+-----------------+
+10 rows in set (0.00 sec)

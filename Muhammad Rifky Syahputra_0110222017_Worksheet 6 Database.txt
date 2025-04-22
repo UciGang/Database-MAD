@@ -1,0 +1,75 @@
+Muhammad Rifky Syahputra
+0110222017
+
+1.
+mysql> delimiter //
+mysql> create procedure pro_naik (
+    -> in jenis_produk int,
+    -> in persentasi_kenaikan int)
+    -> begin
+    -> update produk set harga_jual = harga_jual + (harga_jual * persentasi_kenaikan / 100)
+    -> where jenis_produk_id = jenis_produk;
+    -> end //
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> delimiter ;
+mysql> call pro_naik(1,4);
+Query OK, 3 rows affected (0.01 sec)
+
+2.
+mysql> create function umur(tgl_lahir date)
+    -> returns int
+    -> deterministic
+    -> begin
+    -> declare umur int;
+    -> set umur = year(curdate()) - year(tgl_lahir);
+    -> return umur;
+    -> end //
+Query OK, 0 rows affected (0.01 sec)
+mysql> select nama, umur(tgl_lahir) from pelanggan;
++---------------+-----------------+
+| nama          | umur(tgl_lahir) |
++---------------+-----------------+
+| Agung Sedayu  |              15 |
+| Pandan Wangi  |              75 |
+| Sekar Mirah   |              42 |
+| Swandaru Geni |              44 |
+| Pradabashu    |              40 |
+| Gayatri Dwi   |              38 |
+| Dewi Gyat     |              37 |
+| Andre Haru    |              35 |
+| Ahmad Hasan   |              33 |
+| Cassanndra    |              35 |
++---------------+-----------------+
+10 rows in set (0.00 sec)
+
+3.
+mysql> create function kategori_harga(harga double)
+    -> returns varchar(20)
+    -> deterministic
+    -> begin
+    -> declare kategori_harga varchar(20);
+    -> if harga < 500000 then set kategori_harga = 'murah';
+    -> elseif harga < 3000000 then set kategori_harga = 'sedang';
+    -> elseif harga < 10000000 then set kategori_harga = 'mahal';
+    -> else set kategori_harga = 'sangat mahal';
+    -> end if;
+    -> return kategori_harga;
+    -> end //
+Query OK, 0 rows affected (0.01 sec)
+mysql> select nama, harga_jual, kategori_harga(harga_jual) from produk;
++------------------+------------+----------------------------+
+| nama             | harga_jual | kategori_harga(harga_jual) |
++------------------+------------+----------------------------+
+| Televisi 21 inch |    5503680 | mahal                      |
+| Televisi 40 inch |    8124480 | mahal                      |
+| Kulkas 2 pintu   |    5110560 | mahal                      |
+| Meja Makan       |     600000 | sedang                     |
+| Teh Kotak        |       3500 | murah                      |
+| PC Desktop HP    |    9600000 | mahal                      |
+| Teh Botol        |       2500 | murah                      |
+| Notebook Acer    |   10800000 | sangat mahal               |
+| Notebook Lenovo  |   12000000 | sangat mahal               |
+| Laptop HP        |   13000000 | sangat mahal               |
++------------------+------------+----------------------------+
+10 rows in set (0.00 sec)
